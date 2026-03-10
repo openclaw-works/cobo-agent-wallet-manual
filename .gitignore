@@ -1,0 +1,43 @@
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# Mintlify
+.mintlify/
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
