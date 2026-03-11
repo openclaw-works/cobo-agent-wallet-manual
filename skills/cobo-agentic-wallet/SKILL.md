@@ -17,10 +17,10 @@ caw --help
 
 ## Auth Setup
 
-Credentials are auto-stored by `caw provision` / `caw init`. Set API URL before running any command:
+Credentials are auto-stored by `caw onboard provision` / `caw onboard init`. Set API URL before running any command:
 
 ```bash
-export AGENT_WALLET_API_URL=https://api.agent-wallet-core.sandbox.cobo.com
+export AGENT_WALLET_API_URL=https://api-agent-wallet-core.sandbox.cobo.com
 export AGENT_WALLET_API_KEY=<your_api_key>  # only needed if not already stored
 ```
 
@@ -34,7 +34,7 @@ export AGENT_WALLET_API_KEY=<your_api_key>  # only needed if not already stored
 4. Owner receives a setup token.
 5. Agent runs:
    ```bash
-   caw --format table provision --token <TOKEN>
+   caw --format table onboard provision --token <TOKEN>
    ```
 6. Wallet is auto-provisioned with key shares, delegation, and policies.
 
@@ -42,24 +42,24 @@ export AGENT_WALLET_API_KEY=<your_api_key>  # only needed if not already stored
 
 1. Agent runs:
    ```bash
-   caw --format table init
+   caw --format table onboard init
    ```
 2. Agent shares the returned deep link with the owner.
 3. Owner opens the link, authenticates, and configures preferences.
 4. The command detects activation automatically, then downloads + init + starts TSS-Node, creates vault, and runs KeyGen.
 5. The command exits when onboarding is complete.
 
-`caw init` and `caw provision` are long-running blocking commands (typically 60–180 seconds). Do not interrupt them.
+`caw onboard init` and `caw onboard provision` are long-running blocking commands (typically 60–180 seconds). Do not interrupt them.
 
 ### Execution guidance for AI agents
 
 Before running any `caw` command, ensure `AGENT_WALLET_API_URL` is set.
 
-Both `caw init` and `caw provision` run for 60–180 seconds. When executing:
+Both `caw onboard init` and `caw onboard provision` run for 60–180 seconds. When executing:
 
 1. **Run in background** and poll output every 10–15 seconds.
 2. **Report progress** to the user as each step completes (don't wait for the user to ask).
-3. **Share the deep link immediately** — for `caw init` (Path B), the Telegram deep link is printed early in the output. Surface it to the user right away so the owner can start the Telegram flow in parallel.
+3. **Share the deep link immediately** — for `caw onboard init` (Path B), the Telegram deep link is printed early in the output. Surface it to the user right away so the owner can start the Telegram flow in parallel.
 
 **Progress steps** (printed to stdout):
 ```
@@ -89,40 +89,97 @@ Exit code 0 = success. Any non-zero exit code indicates failure — check output
 
 ## CLI Commands
 
-All commands use `caw` as the entry point. Use `--format json` when you need to parse the output programmatically (transfers, policy checks, audit queries). Use `--format table` for human-readable display (onboarding, status checks).
+All commands use `caw` as the entry point with subcommand groups. Use `--format json` when you need to parse the output programmatically (transfers, policy checks, audit queries). Use `--format table` for human-readable display (onboarding, status checks).
 
-### Onboarding & Status
+### Onboarding (`caw onboard`)
 
 | Command | Description |
 |---------|-------------|
-| `caw provision --token <TOKEN>` | Path A: provision with owner-issued setup token |
-| `caw init` | Path B: agent-first onboarding, returns deep link for owner |
-| `caw self-test --wallet <wallet_uuid>` | Run blocked + allowed transfer probes to validate policy |
-| `caw status` | Inspect spend summary and freeze state |
+| `caw onboard provision --token <TOKEN>` | Path A: provision with owner-issued setup token |
+| `caw onboard init` | Path B: agent-first onboarding, returns deep link for owner |
+| `caw onboard self-test --wallet <wallet_uuid>` | Run blocked + allowed transfer probes to validate policy |
 | `caw demo` | Run the quickstart demo workflow |
 
-### Wallet Operations
+### Wallet (`caw wallet`)
 
 | Command | Description |
 |---------|-------------|
-| `caw list-wallets` | List wallets accessible to the caller |
-| `caw balance <wallet_uuid>` | Get wallet balance |
-| `caw transfer <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Transfer tokens with policy enforcement |
-| `caw list-transactions <wallet_uuid>` | List recent transactions with status |
-| `caw estimate-transfer-fee <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Estimate transfer fee |
+| `caw wallet list` | List wallets accessible to the caller |
+| `caw wallet create --name <name> --main-node-id <id>` | Create a new MPC wallet |
+| `caw wallet get <wallet_uuid>` | Get wallet details |
+| `caw wallet balance <wallet_uuid>` | Get wallet token balances |
+| `caw wallet status <wallet_uuid>` | Inspect spend summary and freeze state |
+| `caw wallet update <wallet_uuid> --name <name>` | Update wallet properties |
+| `caw wallet archive <wallet_uuid>` | Archive a wallet |
+| `caw wallet node-status <wallet_uuid>` | Get TSS node status |
 
-### Contract Calls
-
-| Command | Description |
-|---------|-------------|
-| `caw contract-call <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Execute contract call with policy enforcement |
-| `caw estimate-contract-call-fee <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Estimate contract call fee |
-
-### Audit & Monitoring
+### Address (`caw address`)
 
 | Command | Description |
 |---------|-------------|
-| `caw audit-logs [--wallet <uuid>] [--result allowed\|denied\|error] [--action <type>]` | Query audit logs with filters |
+| `caw address list <wallet_uuid>` | List addresses for a wallet |
+| `caw address create <wallet_uuid> --chain <id>` | Create new address on chain |
+| `caw address recent <wallet_uuid>` | List recently used addresses |
+
+### Transactions (`caw tx`)
+
+| Command | Description |
+|---------|-------------|
+| `caw tx transfer <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Transfer tokens with policy enforcement |
+| `caw tx list <wallet_uuid>` | List recent transactions with status |
+| `caw tx get <tx_id>` | Get transaction details |
+| `caw tx call <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Execute contract call |
+| `caw tx estimate-transfer-fee <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Estimate transfer fee |
+| `caw tx estimate-call-fee <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Estimate contract call fee |
+
+### Delegation (`caw delegation`)
+
+| Command | Description |
+|---------|-------------|
+| `caw delegation create <wallet_uuid> --to <operator_id> --max-tx <amount>` | Create delegation with operator |
+| `caw delegation list` | List delegations created by owner |
+| `caw delegation get <delegation_id>` | Get delegation details |
+| `caw delegation update <delegation_id> --max-tx <amount>` | Update delegation |
+| `caw delegation revoke <delegation_id>` | Revoke a delegation |
+| `caw delegation received` | List delegations received as operator |
+| `caw delegation freeze --scope <owner\|wallet\|delegation> [--wallet-id <id>] [--delegation-id <id>]` | Freeze delegations |
+| `caw delegation unfreeze --scope <owner\|wallet\|delegation> [--wallet-id <id>] [--delegation-id <id>]` | Unfreeze delegations |
+
+### Policy (`caw policy`)
+
+| Command | Description |
+|---------|-------------|
+| `caw policy list` | List policies |
+| `caw policy get <policy_id>` | Get policy details |
+| `caw policy create --delegation-id <id> --name <name> --type <type> --rules <json>` | Create policy |
+| `caw policy update <policy_id> --rules <json>` | Update policy |
+| `caw policy deactivate <policy_id>` | Deactivate policy |
+| `caw policy dry-run <policy_id> --action <action> --params <json>` | Test policy evaluation |
+
+### Pending Operations (`caw pending`)
+
+| Command | Description |
+|---------|-------------|
+| `caw pending list` | List pending operations |
+| `caw pending get <operation_id>` | Get pending operation details |
+| `caw pending approve <operation_id>` | Approve pending operation |
+| `caw pending reject <operation_id>` | Reject pending operation |
+
+### Agent (`caw agent`)
+
+| Command | Description |
+|---------|-------------|
+| `caw agent status` | Get agent status |
+| `caw agent list` | List agents owned by principal |
+| `caw agent api-key create --name <name>` | Create API key |
+| `caw agent api-key list` | List API keys |
+| `caw agent api-key revoke <api_key_id>` | Revoke API key |
+
+### Audit (`caw audit`)
+
+| Command | Description |
+|---------|-------------|
+| `caw audit logs [--wallet <uuid>] [--result allowed\|denied\|error] [--action <type>]` | Query audit logs with filters |
 
 ## Owner-Side NL Assistant
 
@@ -137,23 +194,23 @@ Owners interact via Telegram:
 ### Path B onboarding (sandbox)
 ```bash
 export AGENT_WALLET_API_URL=https://api.agent-wallet-core.sandbox.cobo.com
-caw --format table init --tss-env sandbox
+caw --format table onboard init --tss-env sandbox
 ```
 
 ### Path A onboarding (sandbox)
 ```bash
 export AGENT_WALLET_API_URL=https://api.agent-wallet-core.sandbox.cobo.com
-caw --format table provision --token <TOKEN> --tss-env sandbox
+caw --format table onboard provision --token <TOKEN> --tss-env sandbox
 ```
 
 ### Self-test after provisioning
 ```bash
-caw --format json self-test --wallet <wallet_uuid>
+caw --format json onboard self-test --wallet <wallet_uuid>
 ```
 
 ### Transfer tokens
 ```bash
-caw --format json transfer <wallet_uuid> \
+caw --format json tx transfer <wallet_uuid> \
   --to 0x1234...abcd \
   --token USDC \
   --amount 10 \
@@ -163,11 +220,26 @@ caw --format json transfer <wallet_uuid> \
 
 ### List recent transactions
 ```bash
-caw --format json list-transactions <wallet_uuid> --limit 20
+caw --format json tx list <wallet_uuid> --limit 20
+```
+
+### Check wallet balance
+```bash
+caw --format json wallet balance <wallet_uuid>
+```
+
+### Freeze all delegations for a wallet
+```bash
+caw delegation freeze --scope wallet --wallet-id <wallet_uuid> --yes
+```
+
+### Query audit logs
+```bash
+caw --format json audit logs --wallet <wallet_uuid> --result denied --limit 50
 ```
 
 ## Error Handling
 
 - Policy denials return structured JSON in `--format json` mode.
 - Use denial `suggestion` field to retry with adjusted parameters.
-- `self-test` validates both blocked and allowed transfers automatically.
+- `onboard self-test` validates both blocked and allowed transfers automatically.
