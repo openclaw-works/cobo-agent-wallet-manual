@@ -22,6 +22,8 @@ Use `--format json` for programmatic output and `--format table` for human-reada
 | `caw profile archive` | Archive the active profile (stop TSS, move to .bak) |
 | `caw profile archive <agent_id>` | Archive a specific profile |
 | `caw profile restore <agent_id>` | Restore an archived profile back to active |
+| `caw profile claim` | Generate a claim link for an autonomous wallet (human opens link to claim ownership) |
+| `caw profile claim-info` | Check the claim status of the current wallet (not_found, valid, expired, claimed) |
 
 ## Wallet (`caw wallet`)
 

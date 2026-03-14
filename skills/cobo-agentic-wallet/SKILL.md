@@ -131,7 +131,19 @@ This single command completes the full setup. **Do NOT create addresses or run s
 
 Notes:
 - **`--sponsor false` is required** for transfers — autonomous wallets do NOT support gas sponsorship.
-- A human can claim ownership of the wallet later via the Web Console.
+
+**Claiming — transfer ownership to a human:**
+
+An autonomous wallet has no human owner. To let a human claim it:
+
+```bash
+caw profile claim                   # generate a claim link
+caw profile claim-info              # check claim status
+```
+
+`claim` returns a `claim_link` URL. Share this link with the human — they open it in the Web Console to complete the ownership transfer. Once claimed, the wallet switches to Supervised mode (delegation is created, `--sponsor true` becomes available).
+
+Use `claim-info` to check the current state: `not_found` (no claim initiated), `valid` (pending, waiting for human), `expired`, or `claimed` (transfer complete).
 
 ---
 
