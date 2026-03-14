@@ -48,3 +48,12 @@ When a transaction returns HTTP 202, poll with `caw pending get <operation_id>`.
 
 - [Policy Management](./recipes/policy-management.md) — Create, test, and troubleshoot policies
 - [Error Handling](./recipes/error-handling.md) — Common errors, policy denials, and recovery patterns
+- [EVM DeFi — Aave V3](./recipes/evm-defi-aave.md) — Supply collateral, borrow, repay, and withdraw on Aave V3 (Sepolia)
+- [EVM DeFi — DEX Swap](./recipes/evm-defi-dex-swap.md) — Token swap via Uniswap V3 `exactInputSingle` on EVM
+- [EVM DeFi — DCA](./recipes/evm-defi-dca.md) — Repeated fixed-size swaps at timed intervals on EVM
+- [EVM DeFi — Grid Trading](./recipes/evm-defi-grid-trading.md) — Buy/sell ladder at preset price levels on EVM
+- [Solana DeFi — DEX Swap](./recipes/solana-defi-dex-swap.md) — Token swap on Solana via Jupiter V6 (mainnet) or Memo+Transfer simulation (devnet)
+- [Solana DeFi — DCA](./recipes/solana-defi-dca.md) — Repeated fixed-size purchases at timed intervals on Solana
+- [Solana DeFi — Grid Trading](./recipes/solana-defi-grid-trading.md) — Buy/sell ladder at preset price levels on Solana
+- [Solana DeFi — Prediction Market](./recipes/solana-defi-prediction-market.md) — Long/Short stake positions on Solana
+

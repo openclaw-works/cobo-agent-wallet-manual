@@ -36,7 +36,7 @@ Use `--format json` for programmatic output and `--format table` for human-reada
 | `caw tx transfer <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Transfer tokens with policy enforcement |
 | `caw tx list <wallet_uuid>` | List recent transactions with status |
 | `caw tx get <wallet_uuid> <tx_id>` | Get transaction details |
-| `caw tx call <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Execute contract call |
+| `caw tx call <wallet_uuid> --chain <id> [--contract <addr> --calldata <hex>] [--instructions <json>] [--src-addr <addr>]` | Execute contract/program call (EVM: use --contract/--calldata; Solana: use --instructions). Use --src-addr to specify source address. |
 | `caw tx estimate-transfer-fee <wallet_uuid> --to <addr> --token <id> --amount <n> --chain <id>` | Estimate transfer fee |
 | `caw tx estimate-call-fee <wallet_uuid> --contract <addr> --calldata <hex> --chain <id>` | Estimate contract call fee |
 
