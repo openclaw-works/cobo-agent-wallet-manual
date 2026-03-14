@@ -57,7 +57,7 @@ Transfer fails because the wallet lacks sufficient funds.
 
 TSS Node connected to the wrong environment. Check `--tss-env` parameter matches the setup token's environment (sandbox/dev).
 
-**Recovery:** Stop TSS Node, clean up state (see SKILL.md Reset/Cleanup), re-run `onboard provision` with the correct `--tss-env`.
+**Recovery:** Stop TSS Node, clean up state (see SKILL.md Reset/Cleanup), re-run `onboard --token <TOKEN> --create-wallet` with the correct `--tss-env`.
 
 ### `Timed out waiting for wallet activation`
 

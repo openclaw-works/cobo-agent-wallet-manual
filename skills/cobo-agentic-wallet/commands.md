@@ -6,9 +6,22 @@ Use `--format json` for programmatic output and `--format table` for human-reada
 
 | Command | Description |
 |---------|-------------|
-| `caw onboard provision --token <TOKEN>` | Provision with owner-issued setup token |
+| `caw onboard --token <TOKEN> --create-wallet` | Full onboarding: pair with token and create wallet |
 | `caw onboard self-test --wallet <wallet_uuid>` | Run blocked + allowed transfer probes to validate policy |
 | `caw demo` | Run the quickstart demo workflow |
+
+## Profile (`caw profile`)
+
+| Command | Description |
+|---------|-------------|
+| `caw profile list` | List all agent profiles on this machine |
+| `caw profile list --archived` | List archived (backed-up) profiles |
+| `caw profile current` | Show the currently active profile and its credentials |
+| `caw profile use <agent_id>` | Switch the default profile to a different agent |
+| `caw profile env` | Show the environment of the active profile (sandbox, dev, prod) |
+| `caw profile archive` | Archive the active profile (stop TSS, move to .bak) |
+| `caw profile archive <agent_id>` | Archive a specific profile |
+| `caw profile restore <agent_id>` | Restore an archived profile back to active |
 
 ## Wallet (`caw wallet`)
 
@@ -20,6 +33,7 @@ Use `--format json` for programmatic output and `--format table` for human-reada
 | `caw wallet balance <wallet_uuid>` | Get wallet token balances |
 | `caw wallet status <wallet_uuid>` | Inspect spend summary and freeze state |
 | `caw wallet update <wallet_uuid> --name <name>` | Update wallet properties |
+| `caw wallet node-status` | Check TSS Node registration and connection status on Cobo side |
 
 ## Address (`caw address`)
 
@@ -46,6 +60,21 @@ Use `--format json` for programmatic output and `--format table` for human-reada
 |---------|-------------|
 | `caw faucet tokens` | List available faucet tokens grouped by chain |
 | `caw faucet deposit --address <addr> --token <token_id>` | Request test tokens for an address |
+
+## TSS Node (`caw node`)
+
+| Command | Description |
+|---------|-------------|
+| `caw node status` | Show TSS Node running status (pid, env, binary) |
+| `caw node info` | Show TSS Node ID and metadata |
+| `caw node health` | Run health checks: binary, db, keyfile, process, disk |
+| `caw node start` | Start the TSS Node |
+| `caw node stop` | Stop the TSS Node (checks for pending transactions first) |
+| `caw node stop --force` | Stop the TSS Node even with pending transactions |
+| `caw node restart` | Restart the TSS Node (stop + start) |
+| `caw node logs` | View recent log lines (default 50) |
+| `caw node logs -f` | Tail logs in real time |
+| `caw node logs --lines 200` | View more log lines |
 
 ## Delegation (`caw delegation`)
 
