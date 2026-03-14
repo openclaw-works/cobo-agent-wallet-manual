@@ -9,7 +9,7 @@ A Claude Code skill that enables AI agents to operate Cobo Agentic Wallets, aka 
 在 Claude Code 或 OpenClaw 等支持 skill 的 AI 工具中直接说：
 
 ```
-Install the cobo-agentic-wallet skill from /path/to/cobo-agentic-wallet/
+Install the cobo-agentic-wallet skill from https://github.com/cobosteven/cobo-agent-wallet-manual/tree/master/skills/cobo-agentic-wallet
 ```
 
 ### 2. Try it

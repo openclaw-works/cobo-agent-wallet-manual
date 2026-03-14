@@ -38,6 +38,14 @@ rsync -av --delete \
     --exclude='evals' \
     "$SOURCE_DIR/" "$TARGET_DIR/"
 
+# Replace placeholder path in README.md with the GitHub URL
+GITHUB_URL="https://github.com/cobosteven/cobo-agent-wallet-manual/tree/master/skills/cobo-agentic-wallet"
+README_FILE="$TARGET_DIR/README.md"
+if [ -f "$README_FILE" ]; then
+    sed -i '' "s|/path/to/cobo-agentic-wallet/|${GITHUB_URL}|g" "$README_FILE"
+    echo -e "${GREEN}✓ Updated README.md install path to ${GITHUB_URL}${NC}"
+fi
+
 echo -e "${GREEN}✓ Skill synchronization completed successfully!${NC}"
 
 # Show what was synced
