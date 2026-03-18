@@ -14,13 +14,19 @@ Cobo Agentic Wallet is a policy-enforced crypto wallet for AI agents. Owners set
 
 ## Install
 
-On first use in a conversation, run this to ensure the latest version:
+On first use in a conversation, verify Python >= 3.11 and install/upgrade the CLI:
 
 ```bash
-pip install --upgrade cobo-agentic-wallet && caw --version
+python3 -c "import sys; assert sys.version_info >= (3, 11), f'Python >= 3.11 required, got {sys.version}'" \
+  && pip install --upgrade cobo-agentic-wallet && caw --version
 ```
 
-Skip if you have already confirmed the version in this session.
+If the Python check fails, install Python 3.11+ first:
+- macOS: `brew install python@3.11`
+- Ubuntu/Debian: `sudo apt install python3.11`
+- Or use pyenv: `pyenv install 3.11 && pyenv local 3.11`
+
+Then re-run the install command above. Skip if you have already confirmed the version in this session.
 
 ## Environment
 
@@ -43,6 +49,10 @@ If the user provides a **token** → Supervised path. Otherwise → Autonomous p
 ```bash
 caw onboard --create-wallet --env sandbox
 ```
+Runs 5 sequential steps (~60–180s):
+`[1/5]` Register → `[2/5]` Download TSS → `[3/5]` Init TSS → `[4/5]` Start TSS → `[5/5]` Create wallet.
+
+> **IMPORTANT:** Long-running command. Run in background, poll output every 10–15s, report each `[n/5]` step to the user.
 
 > See [Error Handling — Onboarding errors](./recipes/error-handling.md#onboarding-errors) for onboarding errors.
 
@@ -60,7 +70,7 @@ caw onboard --token <TOKEN> --create-wallet --env sandbox
 ```
 
 Runs 5 sequential steps (~60–180s):
-`[1/5]` Register → `[2/5]` Download TSS → `[3/5]` Init TSS → `[4/5]` Start TSS → `[5/5]` Create wallet.
+`[1/5]` Pairing → `[2/5]` Download TSS → `[3/5]` Init TSS → `[4/5]` Start TSS → `[5/5]` Create wallet.
 
 > **IMPORTANT:** Long-running command. Run in background, poll output every 10–15s, report each `[n/5]` step to the user.
 
@@ -135,6 +145,7 @@ See `caw profile --help` for all profile subcommands (`list`, `current`, `use`, 
 - **wallet_uuid is optional** in most commands — if omitted, the CLI uses the active profile's wallet.
 - **StandardResponse format** — API responses are wrapped as `{ success: true, result: <data> }`. Extract from `result` first.
 - **Non-zero exit codes** indicate failure — check stdout/stderr before retrying.
+- **Show the command**: When reporting `caw` results to the user, always include the full CLI command that was executed, so the user can reproduce or debug independently.
 
 ## Reference
 
