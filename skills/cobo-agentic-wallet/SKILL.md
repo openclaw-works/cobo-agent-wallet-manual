@@ -18,12 +18,13 @@ On first use in a conversation, detect the platform and install the `caw` binary
 
 ```bash
 # Detect platform
+VERSION="0.1.0"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 case "$ARCH" in x86_64) ARCH="amd64" ;; aarch64) ARCH="arm64" ;; esac
 
 # Download and install
-PACKAGE_URL="https://github.com/cobosteven/cobo-agent-wallet-manual/raw/refs/heads/master/skills/temp_packages/caw-${OS}-${ARCH}.tar.gz"
+PACKAGE_URL="https://github.com/cobosteven/cobo-agent-wallet-manual/raw/refs/heads/master/skills/temp_packages/caw-${VERSION}-${OS}-${ARCH}.tar.gz"
 curl -fSL "$PACKAGE_URL" | tar xz -C /usr/local/bin/
 chmod +x /usr/local/bin/caw
 
