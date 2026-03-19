@@ -136,6 +136,28 @@ See `caw profile --help` for all profile subcommands (`list`, `current`, `use`, 
 
 ---
 
+## Common Operations
+
+```bash
+# Transfer tokens
+caw --format json tx transfer --to 0x1234...abcd --token USDC --amount 10 --chain BASE --request-id pay-invoice-1001
+
+# Check wallet balance
+caw --format json wallet balance
+
+# List recent transactions
+caw --format json tx list --limit 20
+
+# Estimate fee before transfer
+caw --format json tx estimate-transfer-fee --to 0x1234...abcd --token USDC --amount 10 --chain BASE
+
+# Contract call
+caw --format json tx call --contract 0xContractAddr --calldata 0x... --chain ETH
+
+# Poll a pending approval
+caw --format json pending get <operation_id>
+```
+
 ## Key Notes
 
 - **`--format json`** for programmatic output; `--format table` only when displaying to the user.
@@ -146,14 +168,15 @@ See `caw profile --help` for all profile subcommands (`list`, `current`, `use`, 
 - **StandardResponse format** — API responses are wrapped as `{ success: true, result: <data> }`. Extract from `result` first.
 - **Non-zero exit codes** indicate failure — check stdout/stderr before retrying.
 - **Show the command**: When reporting `caw` results to the user, always include the full CLI command that was executed, so the user can reproduce or debug independently.
+- **Policy denial**: Tell the user what was blocked and why — see [error-handling.md](./recipes/error-handling.md#communicating-denials-to-the-user) for the message template.
 
 ## Reference
 
 Read the file that matches the user's task. Do not load files that aren't relevant.
 
-- [Recipes](./recipes.md) — Read for quick one-liner examples of common operations
-  - [Policy Management](./recipes/policy-management.md)
-  - [Error Handling](./recipes/error-handling.md)
+- [Policy Management](./recipes/policy-management.md) — Inspect, test, and troubleshoot policies
+- [Error Handling](./recipes/error-handling.md) — Common errors, policy denials, recovery patterns, and user communication
+- [Security](./recipes/security.md) — Prompt injection, credential protection, delegation boundaries, incident response
 
 **DeFi recipes** — read the matching file when the user asks about a specific strategy:
 
