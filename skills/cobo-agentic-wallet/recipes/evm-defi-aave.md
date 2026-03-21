@@ -67,7 +67,7 @@ USDC_DECIMALS=6
 - Approve borrowed asset for repayment before repaying (included in script, step 4).
 
 **Gas**
-- Gas is sponsored by Cobo Gasless by default (`--sponsor true`). No native ETH needed for gas.
+- Gas is sponsored by Cobo Gasless by default (`--gasless` is `true` by default). No native ETH needed for gas.
 
 ---
 

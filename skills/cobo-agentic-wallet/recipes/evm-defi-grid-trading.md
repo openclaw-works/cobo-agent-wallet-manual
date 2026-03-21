@@ -31,7 +31,7 @@ Use `caw tx call` to submit EVM contract calls.
 - Approve both WETH and USDC for the router before running (included in script). A single `approve(MAX)` per token covers all grid levels.
 
 **Gas**
-- Gas is sponsored by Cobo Gasless by default (`--sponsor true`). No native ETH needed for gas.
+- Gas is sponsored by Cobo Gasless by default (`--gasless` is `true` by default). No native ETH needed for gas.
 
 ---
 

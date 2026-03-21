@@ -32,7 +32,7 @@ Use `caw tx call` to submit EVM contract calls.
 - Approve the Uniswap Router to spend WETH and/or USDC before the first swap (included in scripts).
 
 **Gas**
-- Gas is sponsored by Cobo Gasless by default (`--sponsor true`). No native ETH needed for gas.
+- Gas is sponsored by Cobo Gasless by default (`--gasless` is `true` by default). No native ETH needed for gas.
 
 ---
 

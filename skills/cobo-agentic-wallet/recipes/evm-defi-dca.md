@@ -29,7 +29,7 @@ Use `caw tx call` to submit EVM contract calls.
 - Approve WETH for the router once before the first round (included in script, Step 0). A single `approve(MAX)` covers all DCA rounds.
 
 **Gas**
-- Gas is sponsored by Cobo Gasless by default (`--sponsor true`). No native ETH needed for gas.
+- Gas is sponsored by Cobo Gasless by default (`--gasless` is `true` by default). No native ETH needed for gas.
 
 ---
 
