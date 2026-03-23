@@ -143,7 +143,7 @@ Each `caw onboard` creates a separate **profile** — an isolated identity with 
 
 ```bash
 # Example: transfer using a non-default profile
-caw --profile caw_agent_abc123 tx transfer --to 0x... --token SOLDEV_SOL_USDC --amount 0.0001 --chain SOLDEV_SOL
+caw --profile caw_agent_abc123 tx transfer --to 0x... --token SOLDEV_SOL_USDC --amount 0.0001
 ```
 
 See `caw profile --help` for all profile subcommands (`list`, `current`, `use`, `env`, `archive`, `restore`).
@@ -156,10 +156,10 @@ See `caw profile --help` for all profile subcommands (`list`, `current`, `use`, 
 
 ```bash
 # Transfer tokens
-caw --format json tx transfer --to 0x1234...abcd --token USDC --amount 10 --chain BASE --request-id pay-invoice-1001
+caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --request-id pay-invoice-1001
 
 # Dry-run a transfer (check policy + fee estimate without executing)
-caw --format json tx transfer --to 0x1234...abcd --token USDC --amount 10 --chain BASE --dry-run
+caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --dry-run
 
 # Aggregated wallet status (agent info, balances, pending ops, delegations)
 caw --format json status
@@ -171,7 +171,7 @@ caw --format json wallet balance
 caw --format json tx list --limit 20
 
 # Estimate fee before transfer
-caw --format json tx estimate-transfer-fee --to 0x1234...abcd --token USDC --amount 10 --chain BASE
+caw --format json tx estimate-transfer-fee --to 0x1234...abcd --token ETH_USDC --amount 10
 
 # Contract call
 caw --format json tx call --contract 0xContractAddr --calldata 0x... --chain ETH
@@ -239,9 +239,9 @@ Common chain IDs for `--chain` and `--chain-id` flags:
 | Chain | Chain ID | Type |
 |---|---|---|
 | Ethereum | `ETH` | EVM |
-| Base | `BASE` | EVM |
-| Arbitrum | `ARBITRUM` | EVM |
-| Optimism | `OP` | EVM |
+| Base | `BASE_ETH` | EVM |
+| Arbitrum | `ARBITRUM_ETH` | EVM |
+| Optimism | `OPT_ETH` | EVM |
 | Polygon | `MATIC` | EVM |
 | Solana | `SOL` | Solana |
 | Sepolia (testnet) | `SETH` | EVM |
