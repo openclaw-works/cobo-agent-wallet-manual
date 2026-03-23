@@ -44,3 +44,4 @@ ehthumbs.db
 
 # Sync script (local tool, not distributed)
 sync-skill.sh
+.claude
