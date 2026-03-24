@@ -149,11 +149,27 @@ CONTENT_LENGTH=$content_length
 EOF
 }
 
+local_caw_version_matches() {
+  local caw_bin="$1"
+  local want="$2"
+  [[ -x "$caw_bin" ]] || return 1
+  local got
+  got="$("$caw_bin" version 2>&1 || "$caw_bin" --version 2>&1)" || return 1
+  got="$(echo "$got" | awk '{print $NF}')"
+  [[ "$got" == "$want" ]]
+}
+
 should_download_artifact() {
   local target_path="$1"
   local label="$2"
 
   if [[ "$FORCE_DOWNLOAD" == "true" ]]; then
+    return 0
+  fi
+  if [[ "$label" == "caw" ]]; then
+    if local_caw_version_matches "$target_path" "$CAW_VERSION"; then
+      return 1
+    fi
     return 0
   fi
   if [[ -f "$target_path" ]]; then
@@ -234,9 +250,9 @@ main() {
   read -r os arch < <(detect_platform)
   mkdir -p "$BIN_DIR" "$LOG_DIR" "$CACHE_TSS_DIR"
 
-  # Early exit: if both caw and tss-node exist and no force-download, skip download
+  # Early exit: both binaries present, caw version matches, no force-download
   if [[ "$FORCE_DOWNLOAD" != "true" ]]; then
-    if [[ -x "$BIN_DIR/caw" ]] && [[ -x "$CACHE_TSS_DIR/cobo-tss-node" ]]; then
+    if local_caw_version_matches "$BIN_DIR/caw" "$CAW_VERSION" && [[ -x "$CACHE_TSS_DIR/cobo-tss-node" ]]; then
       echo "ready"
       exit 0
     fi
