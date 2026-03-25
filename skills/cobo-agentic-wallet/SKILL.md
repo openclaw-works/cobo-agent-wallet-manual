@@ -50,16 +50,21 @@ If an update is available, run `npx skills update cobosteven/cobo-agent-wallet-m
 ## Common Operations
 
 ```bash
-# Transfer tokens (always dry-run first)
-caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --dry-run
-caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --request-id pay-001
-
 # Aggregated status
 caw --format json status
 
-# Balance / transactions
+# Balance
 caw --format json wallet balance
+
+# List wallet addresses (receiving addresses on each chain)
+caw --format json address list
+
+# Transaction history
 caw --format json tx list --limit 20
+
+# Transfer tokens (always dry-run first)
+caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --dry-run
+caw --format json tx transfer --to 0x1234...abcd --token ETH_USDC --amount 10 --request-id pay-001
 
 # Fee estimate
 caw --format json tx estimate-transfer-fee --to 0x... --token ETH_USDC --amount 10
@@ -73,6 +78,15 @@ caw util abi decode --method "transfer(address,uint256)" --calldata 0xa9059cbb..
 
 # Pending approval
 caw --format json pending get <operation_id>
+
+# Testnet faucet — deposit testnet tokens to an address
+caw --format json faucet deposit --address <address> --token <token-id>
+caw --format json faucet tokens   # list available testnet tokens
+
+# Look up token IDs and chain IDs
+caw --format json meta chains                         # list all supported chains
+caw --format json meta tokens --chain-ids BASE_ETH   # list tokens on a specific chain
+caw --format json meta tokens --token-ids USDC        # search by token name
 ```
 
 ## Key Notes
@@ -128,4 +142,4 @@ For example: `npx skills find cobosteven/cobo-agent-wallet-manual "lido staking"
 | Arbitrum | `ARBITRUM_ETH` | Solana Devnet | `SOLDEV_SOL` |
 | Optimism | `OPT_ETH` | Polygon | `MATIC` |
 
-Full list: `caw --format json meta chains`
+Full list: `caw --format json meta chains`. Search tokens: `caw --format json meta tokens --token-ids <name>`
