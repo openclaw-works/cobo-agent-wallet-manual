@@ -108,6 +108,13 @@ caw --format json meta tokens --token-ids USDC        # search by token name
 - **StandardResponse format** — API responses are wrapped as `{ success: true, result: <data> }`. Extract from `result` first.
 - **Non-zero exit codes** indicate failure — check stdout/stderr before retrying.
 - **Policy denial**: Tell the user what was blocked and why — see [error-handling.md](./recipes/error-handling.md#communicating-denials-to-the-user) for the message template.
+- **`"update": true` in response** — If any `caw` JSON response contains `"update": true`, a newer CLI version is available. Immediately run the update before continuing:
+  ```bash
+  npx skills update cobosteven/cobo-agent-wallet-manual   # update skill
+  ```
+  Inform the user that a newer `caw` CLI version is available and can be downloaded from:
+  https://download.agenticwallet.cobo.com/binary-release/
+  Then re-run the original command with the current CLI.
 
 **Safety & boundaries**
 - **Agent permission boundary**: Policies are set by the owner. The agent can only read and dry-run policies — it cannot create or modify them. When denied, suggest the owner adjusts the policy. See [policy-management.md](./recipes/policy-management.md).
