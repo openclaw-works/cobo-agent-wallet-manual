@@ -1,7 +1,7 @@
 ---
 name: cobo-agentic-wallet-sandbox
 metadata:
-  version: "2026.03.26.1"
+  version: "2026.03.26.2"
 description: |
   Use for Cobo Agentic Wallet operations via the `caw` CLI: wallet onboarding, token transfers (USDC, USDT, ETH, SOL, etc.), smart contract calls, balance queries, and policy denial handling.
   Covers DeFi execution on EVM (Base, Ethereum, Arbitrum, Optimism, Polygon) and Solana: Uniswap V3 swaps, Aave V3 lending, Jupiter swaps, DCA, grid trading, Polymarket, and Drift perps.
@@ -15,7 +15,7 @@ Policy-enforced crypto wallet for AI agents. Owners set spending limits; agents 
 
 **Workflow**:
 - **Lightweight operations** (balance check, single transfer, status query, transaction history): use `caw` CLI directly.
-- **Complex or multi-step operations** (DeFi strategies, loops, conditional logic, automation): write a Python script using the SDK, then run it. See [sdk-scripting.md](./recipes/sdk-scripting.md).
+- **Complex or multi-step operations** (DeFi strategies, loops, conditional logic, automation): write a Python script using the SDK, then run it. Design scripts to be **reusable** — parameterize inputs (addresses, amounts, tokens) via CLI arguments or environment variables so they can be re-run without modification. See [sdk-scripting.md](./recipes/sdk-scripting.md).
 
 ## Operating Safely
 
