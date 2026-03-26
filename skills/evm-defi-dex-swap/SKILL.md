@@ -7,7 +7,7 @@ description: |
   Supports Ethereum, Base, Arbitrum, Optimism, Polygon mainnet and Sepolia testnet.
   Use when: user wants to swap tokens on a DEX, buy/sell WETH, USDC, ETH, trade token pairs on Uniswap, or mentions "dex swap", "uniswap swap", "swap tokens on EVM/Base/Arbitrum", "trade USDC for ETH", "buy WETH", "sell USDC", "token swap on chain".
   Also triggers for: "exchange tokens", "convert WETH to USDC", "uniswap v3", "swap on mainnet/testnet".
-  NOT for: Solana DEX swaps (use solana-defi-dex-swap), CEX/centralized exchange trades, cross-chain bridges, or non-Uniswap protocols.
+  NOT for: Solana DEX swaps, CEX/centralized exchange trades, cross-chain bridges, or non-Uniswap protocols.
 ---
 
 # EVM DEX Swap (Uniswap V3)
@@ -116,7 +116,7 @@ caw --format json tx call --contract "$ROUTER" --calldata "$SWAP" --chain "$CHAI
 - **`--format json`**: Use on all `caw` commands for parseable output.
 - **Status lifecycle**: `Submitted → PendingScreening → Broadcasting → Confirming → Completed`
 - **Gas**: Cobo Gasless sponsors gas by default. On L2 (Arbitrum, Optimism), gas costs are much lower.
-- **Error handling**: If a swap is denied by policy, check the `suggestion` field in the error — see the parent skill's [error-handling](../cobo-agentic-wallet/recipes/error-handling.md) recipe.
+- **Error handling**: If a swap is denied by policy, check the `suggestion` field in the error — see the parent skill's [error-handling](../cobo-agentic-wallet/references/error-handling.md).
 
 ## Reference
 
