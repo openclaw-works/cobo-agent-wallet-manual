@@ -84,6 +84,7 @@ Submit a new authorization request for owner approval. Creates a `PENDING_APPROV
 | `--name <text>` | derived from `--intent` | Human-readable name for owner review |
 | `--resource-scope <json>` | -- | Resource scope constraints as JSON, e.g. `'{"wallet_id":"<uuid>"}'`. Always bind to the target wallet at minimum. |
 | `--execution-plan <text>` | -- | Free-form execution plan in markdown format, shown to the owner during approval review. Use sections like `# Summary`, `# Contract Operations`, `# Risk Controls`, `# Schedule` to help the owner understand the concrete actions. See [authorization-spec.md](./authorization-spec.md#execution-plan-structure) |
+| `--original-intent <text>` | -- | Raw user input that originated this request. For multi-turn conversations, concatenate all user messages. Stored alongside the pact for audit/traceability. |
 
 **Full spec mode (for advanced policy control):**
 
@@ -332,16 +333,6 @@ If delegated execution is required and intent is complete, submit an authorizati
 - The operation is a token transfer within default quota — try `caw tx transfer` directly first
 
 ## Post-Submission Flow
-
-### Status Tracking
-
-`caw pact submit` supports `--context` for automatic notification tracking. Pass `--context '{"channel":"<channel>", "target":"<target>"}'` when submitting, then run `caw track --watch` in the background. Notifies via `openclaw message send` on intermediate status changes; uses `openclaw agent --deliver` when the pact reaches a terminal state (active/rejected/completed/expired/revoked).
-
-```bash
-caw --format json pact submit --wallet-id <uuid> --intent "..." \
-  --context '{"channel":"discord", "target":"1483060020718473359"}' \
-  && caw track --watch &
-```
 
 ### Polling for Approval
 

@@ -162,10 +162,10 @@ Read the file that matches the user's task. Do not load files that aren't releva
 | User asks about… | Read |
 |---|---|
 | AP2 shopping, `caw ap2`, merchant agent, CartMandate / PaymentMandate, Human-Present checkout | [ap2-shopping.md](./references/ap2-shopping.md) |
-| Onboarding, install, setup, environments, profiles, claiming, claim tracking | [onboarding.md](./references/onboarding.md) |
+| Onboarding, install, setup, environments, profiles, claiming | [onboarding.md](./references/onboarding.md) |
 | Policy denial, 403, TRANSFER_LIMIT_EXCEEDED | [error-handling.md](./references/error-handling.md) |
 | Policy inspect, dry-run, delegation | [policy-management.md](./references/policy-management.md) |
-| Execution authorization, contract call approval, transfer quota fallback, authorization lifecycle, submit/get/events/cancel, intent-to-params mapping, pact tracking | [execution-authorization.md](./references/execution-authorization.md) |
+| Execution authorization, contract call approval, transfer quota fallback, authorization lifecycle, submit/get/events/cancel, intent-to-params mapping | [execution-authorization.md](./references/execution-authorization.md) |
 | Authorization spec construction, policy schema, permissions, validation rules | [authorization-spec.md](./references/authorization-spec.md) |
 | Security, prompt injection, credentials | [security.md](./references/security.md) |
 | SDK scripting, Python/TypeScript scripts, multi-step operations | [sdk-scripting.md](./references/sdk-scripting.md) |
