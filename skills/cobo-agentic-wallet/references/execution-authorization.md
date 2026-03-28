@@ -1,6 +1,6 @@
 # Pact Management
 
-Pact is the mechanism for action authorization — owner-approved delegation with scoped policies and a time-bound API key. **When presenting this to the user, frame it as "requesting approval for this action" — do not expose pact internals or terminology.**
+Execution authorization is implemented via the `caw pact` CLI commands. **When presenting this to the user, frame it as "requesting approval for this action" — do not expose internal terminology.**
 
 **User-facing language:**
 - Do say: "This action requires owner approval. I'm requesting authorization now."
@@ -11,39 +11,39 @@ Pact is the mechanism for action authorization — owner-approved delegation wit
 - Do not say: "The pact is pending approval."
 - Do not say: "Submitting a pact..."
 
-## When to use pact
+## When to use execution authorization
 
-**Always create a pact before:**
+**Always request authorization before:**
 - Any contract call (`caw tx call`)
 - Any sign message (`caw tx sign-message`)
 - Recurring strategy execution (DCA, periodic rebalance)
 - Multi-step automation with risk bounds
 - Temporary delegated access with explicit expiry
 
-**Create a pact when transfer quota is exhausted:**
-- When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/monthly), create a pact scoped to the transfer
+**Request authorization when transfer quota is exhausted:**
+- When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/monthly), request authorization scoped to the transfer
 
-**Do NOT use pact for:**
+**Do NOT use execution authorization for:**
 - Token transfers within default quota (use `caw tx transfer` directly — try this first)
 - Read-only queries (use `caw wallet balance`, `caw tx list`, etc.)
 - Per-transaction limit denials (suggest reduced amount or ask user to contact owner instead)
 
-## Action Authorization Flow
+## Execution Authorization Flow
 
 1. **Construct** authorization parameters from the user's intent (see [Intent -> Submit Parameter Mapping](#intent---submit-parameter-mapping))
 2. **Submit**: `caw --format json pact submit ...`
 3. **Communicate**: Tell the user "This action requires owner approval. I've submitted an authorization request."
 4. **Poll**: Use `caw --format json pact get <pact_id>` until status changes (or use `--wait`)
-5. **On `active`**: Proceed with execution using the pact-scoped API key
+5. **On `active`**: Proceed with execution using the authorization-scoped API key
 6. **On `rejected`**: Tell the user "The owner declined this action." Suggest adjustments if applicable.
 
 ## Transfer Quota Exhaustion Fallback
 
-When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/monthly spending cap reached — NOT a per-transaction limit), automatically switch to the action authorization flow:
+When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/monthly spending cap reached — NOT a per-transaction limit), automatically switch to the execution authorization flow:
 
 1. Detect denial with cumulative limit reason (e.g., `rolling_24h`, `rolling_30d` in error response)
 2. Inform the user: "The current spending limit has been reached. I'll request authorization for this transfer."
-3. Submit a pact with `--permissions write:transfer,read:wallet`, scoped to this specific transfer
+3. Submit an authorization request with `--permissions write:transfer,read:wallet`, scoped to this specific transfer
 4. Wait for owner approval, then execute the transfer under the new authorization
 
 > **Do not** trigger this fallback for per-transaction limit denials. For those, follow the standard [error handling flow](./error-handling.md) (suggest reduced amount or ask user to contact owner).
@@ -51,7 +51,7 @@ When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/month
 ## Lifecycle
 
 Common lifecycle states:
-- `pending_approval`: submitted and waiting for owner decision
+- `pending_approval`: submitted and waiting for owner decision; request enters `pending_approval` immediately after submit
 - `active`: approved and activated; delegated execution can proceed
 - terminal states: `rejected`, `completed`, `expired`, `cancelled`
 
@@ -61,14 +61,14 @@ Use `caw --format json pact get <pact_id>` to observe state transitions and curr
 
 ### `caw pact submit`
 
-Submit a new pact for owner approval. Creates a `PENDING_APPROVAL` pact and sends a notification to the owner via CAW App.
+Submit a new authorization request for owner approval. Creates a `PENDING_APPROVAL` request and sends a notification to the owner via CAW App.
 
 **Required flags:**
 
 | Flag | Description |
 |---|---|
 | `--wallet-id <uuid>` | Target wallet UUID |
-| `--intent <text>` | Natural language description of the pact's purpose |
+| `--intent <text>` | Natural language description of the authorization's purpose |
 
 **Optional flags (inline mode):**
 
@@ -77,24 +77,24 @@ Submit a new pact for owner approval. Creates a `PENDING_APPROVAL` pact and send
 | `--permissions <list>` | `operator` | Comma-separated permissions granted to the operator. Values: `operator`, `viewer`, `read:wallet`, `write:wallet`, `write:transfer`, `write:contract_call`, `write:manage`. Always choose the **minimum** set needed (see [Least Privilege](#least-privilege-principle)). |
 | `--duration <seconds>` | `0` (no expiry) | Pact duration in seconds from activation. Prefer an explicit finite duration unless the user explicitly requests no expiry. |
 | `--max-tx <usd>` | -- | Maximum USD value per transaction. Creates an inline transfer limit policy. This is a shortcut; for fine-grained policies use `--spec-file` / `--spec-json`. |
-| `--name <text>` | derived from `--intent` | Human-readable pact name for owner review |
+| `--name <text>` | derived from `--intent` | Human-readable name for owner review |
 | `--resource-scope <json>` | -- | Resource scope constraints as JSON, e.g. `'{"wallet_id":"<uuid>"}'`. Always bind to the target wallet at minimum. |
-| `--program <text>` | -- | Free-form execution plan in markdown format, shown to the owner during approval review. Use sections like `# Summary`, `# Contract Operations`, `# Risk Controls`, `# Schedule` to help the owner understand the concrete actions. See [pact-knowledge.md](./pact-knowledge.md#program-structure) |
+| `--execution-plan <text>` | -- | Free-form execution plan in markdown format, shown to the owner during approval review. Use sections like `# Summary`, `# Contract Operations`, `# Risk Controls`, `# Schedule` to help the owner understand the concrete actions. See [authorization-spec.md](./authorization-spec.md#execution-plan-structure) |
 
-**Full PactSpec mode (for advanced policy control):**
+**Full spec mode (for advanced policy control):**
 
 | Flag | Description |
 |---|---|
-| `--spec-file <path>` | Path to a JSON file containing the full PactSpec (permissions, policies, duration, completion conditions, resource scope, program). Mutually exclusive with `--spec-json` and inline flags (`--permissions`, `--duration`, `--max-tx`, `--resource-scope`). |
-| `--spec-json <json>` | Inline JSON string containing the full PactSpec. Mutually exclusive with `--spec-file` and inline flags. |
+| `--spec-file <path>` | Path to a JSON file containing the full authorization spec (permissions, policies, duration, completion conditions, resource scope, execution_plan). Mutually exclusive with `--spec-json` and inline flags (`--permissions`, `--duration`, `--max-tx`, `--resource-scope`). |
+| `--spec-json <json>` | Inline JSON string containing the full authorization spec. Mutually exclusive with `--spec-file` and inline flags. |
 
-Use `--spec-file` or `--spec-json` when you need custom policies (allow/deny pairs, chain/token/contract scoping, rolling usage limits). See [pact-knowledge.md](./pact-knowledge.md#policy-construction-patterns) for policy schema and construction patterns.
+Use `--spec-file` or `--spec-json` when you need custom policies (allow/deny pairs, chain/token/contract scoping, rolling usage limits). See [authorization-spec.md](./authorization-spec.md#policy-construction-patterns) for policy schema and construction patterns.
 
 **Other flags:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--wait` | `false` | Block until the pact leaves `pending_approval` |
+| `--wait` | `false` | Block until the authorization leaves `pending_approval` |
 | `--wait-timeout` | `10m` | Timeout for `--wait` |
 
 **Example (inline mode):**
@@ -108,7 +108,7 @@ caw --format json pact submit \
   --max-tx 500 \
   --name "Base ETH Weekly DCA" \
   --resource-scope '{"wallet_id":"a1b2c3d4-5678-9abc-def0-123456789abc"}' \
-  --program "# Summary
+  --execution-plan "# Summary
 Weekly DCA: swap ~\$500 USDC to ETH via Uniswap V3 on Base.
 
 # Contract Operations
@@ -128,7 +128,7 @@ Every Monday, 90 days from activation.
 After 12 swaps OR \$6,000 total spent OR 90 days."
 ```
 
-**Example (full PactSpec with policies):**
+**Example (full authorization spec with policies):**
 
 ```bash
 caw --format json pact submit \
@@ -138,7 +138,7 @@ caw --format json pact submit \
   --spec-file ./pact-dca.json
 ```
 
-Where `pact-dca.json` contains a full PactSpec with policies:
+Where `pact-dca.json` contains a full authorization spec with policies:
 
 ```json
 {
@@ -180,18 +180,18 @@ Where `pact-dca.json` contains a full PactSpec with policies:
     { "type": "amount_spent_usd", "threshold": "6000" }
   ],
   "resource_scope": { "wallet_id": "a1b2c3d4-5678-9abc-def0-123456789abc" },
-  "program": "# Summary\nWeekly DCA: swap ~$500 USDC to ETH via Uniswap V3 on Base.\n\n# Contract Operations\n- Protocol: Uniswap V3 SwapRouter\n- Chain: Base\n- Contract: 0x2626664c2603336E57B271c5C0b26F421741e481\n- Function: exactInputSingle\n\n# Risk Controls\n- Max per swap: $550 USD\n- Max daily: $600 USD\n- Pre-swap balance check: skip if USDC < $500\n\n# Schedule\nEvery Monday, 90 days from activation.\n\n# Exit Conditions\nAfter 12 swaps OR $6,000 total spent OR 90 days."
+  "execution_plan": "# Summary\nWeekly DCA: swap ~$500 USDC to ETH via Uniswap V3 on Base.\n\n# Contract Operations\n- Protocol: Uniswap V3 SwapRouter\n- Chain: Base\n- Contract: 0x2626664c2603336E57B271c5C0b26F421741e481\n- Function: exactInputSingle\n\n# Risk Controls\n- Max per swap: $550 USD\n- Max daily: $600 USD\n- Pre-swap balance check: skip if USDC < $500\n\n# Schedule\nEvery Monday, 90 days from activation.\n\n# Exit Conditions\nAfter 12 swaps OR $6,000 total spent OR 90 days."
 }
 ```
 
 ### `caw pact get <pact-id>`
 
-Get details of a specific pact. When the pact is `pending_approval` and the linked approval has been resolved, this endpoint triggers lazy activation or rejection.
+Get details of a specific authorization request. When the request is `pending_approval` and the linked approval has been resolved, this endpoint triggers lazy activation or rejection.
 
 - If approved → returns `status: active` with `api_key`, `delegation_id`, `expires_at`
 - If rejected → returns `status: rejected`
 
-The `api_key` field is only visible to the operator principal that submitted the pact.
+The `api_key` field is only visible to the operator principal that submitted the request.
 
 ```bash
 caw --format json pact get <pact_id>
@@ -218,7 +218,7 @@ caw --format json pact list --status active
 
 ### `caw pact events <pact-id>`
 
-Get the lifecycle event history for a pact. Useful for tracking state transitions, activation timestamps, and completion/revocation reasons.
+Get the lifecycle event history for an authorization request. Useful for tracking state transitions, activation timestamps, and completion/revocation reasons.
 
 ```bash
 caw --format json pact events <pact_id>
@@ -226,7 +226,7 @@ caw --format json pact events <pact_id>
 
 ### `caw pact cancel <pact-id>`
 
-Cancel an active pact. **Owner only.** Cancelling revokes the associated delegation, invalidates the pact-scoped API key, and records a `cancelled` event. This action cannot be undone.
+Cancel an active authorization. **Owner only.** Cancelling revokes the associated delegation, invalidates the authorization-scoped API key, and records a `cancelled` event. This action cannot be undone.
 
 Prompts for confirmation by default. Use `--yes` to skip.
 
@@ -236,7 +236,7 @@ caw --format json pact cancel <pact_id>
 
 ## Least Privilege Principle
 
-Every pact MUST request the minimum access needed for the task. Over-scoped pacts increase risk and may be rejected by the owner.
+Every authorization request MUST use the minimum access needed for the task. Over-scoped requests increase risk and may be rejected by the owner.
 
 **Permissions**: Choose the narrowest set:
 
@@ -275,12 +275,12 @@ When user intent is fully understood and execution is ready, construct submit ar
 | Operation scope | `--permissions` | Least privilege set (see [Least Privilege](#least-privilege-principle)). Default `operator` only if both transfers and contract calls are needed |
 | Time window | `--duration` | Parse explicit time: `30d` -> `2592000`, `3 months` -> `7776000`. Prefer finite duration. |
 | Per-transaction budget | `--max-tx` | Per-transaction USD cap if user provided budget constraints (inline policy shortcut) |
-| Custom policies | `--spec-file` / `--spec-json` | Use when the task needs chain/token/contract scoping, allow/deny pairs, or rolling usage limits. See [pact-knowledge.md](./pact-knowledge.md#policy-construction-patterns) for patterns. |
+| Custom policies | `--spec-file` / `--spec-json` | Use when the task needs chain/token/contract scoping, allow/deny pairs, or rolling usage limits. See [authorization-spec.md](./authorization-spec.md#policy-construction-patterns) for patterns. |
 | Display name | `--name` | Concise title for owner approval review |
 | Resource binding | `--resource-scope` | JSON scope constraints; always bind to wallet |
-| Execution plan | `--program` | Free-form markdown with `# Summary`, `# Contract Operations`, `# Risk Controls`, `# Schedule` sections. Helps owner make informed approval decision |
+| Execution plan | `--execution-plan` | Free-form markdown with `# Summary`, `# Contract Operations`, `# Risk Controls`, `# Schedule` sections. Helps owner make informed approval decision |
 
-**Choosing inline vs. full PactSpec:**
+**Choosing inline vs. full spec:**
 
 | Scenario | Approach |
 |---|---|
@@ -307,7 +307,7 @@ Note: `--permissions` uses `write:contract_call,read:wallet` instead of the broa
 
 ## Submission Rules
 
-If delegated execution is required and intent is complete, submit pact immediately before execution.
+If delegated execution is required and intent is complete, submit an authorization request immediately before execution.
 
 **Readiness checklist before submit:**
 
@@ -319,7 +319,7 @@ If delegated execution is required and intent is complete, submit pact immediate
 - [ ] Budget constraints are explicit (per-tx via `--max-tx` or policies, cumulative via completion conditions)
 - [ ] `--resource-scope` binds to the target wallet
 - [ ] `--name` is concise and describes the task for owner review
-- [ ] `--program` describes concrete actions for multi-step or non-obvious tasks
+- [ ] `--execution-plan` describes concrete actions for multi-step or non-obvious tasks
 
 **Do NOT submit if:**
 
@@ -331,34 +331,34 @@ If delegated execution is required and intent is complete, submit pact immediate
 
 ### Polling for Approval
 
-After submit, the pact enters `pending_approval`. Poll with `caw pact get <pact_id>` until the status changes:
+After submit, the request enters `pending_approval`. Poll with `caw pact get <pact_id>` until the status changes:
 
 ```bash
 caw --format json pact get <pact_id>
 ```
 
-### Using the Pact-Scoped API Key
+### Using the Authorization-Scoped API Key
 
-When the pact becomes `active`, the response includes an `api_key`. The operator uses this key for all subsequent operations under the pact:
+When the request becomes `active`, the response includes an `api_key`. The operator uses this key for all subsequent operations under the authorization:
 
 ```bash
-# Configure the pact API key
+# Configure the authorization API key
 caw profile set --api-key caw_sk_pact_abc123...
 
-# Execute operations within pact scope
+# Execute operations within authorization scope
 caw --format json tx call --chain BASE --contract 0x... --calldata 0x...
 ```
 
-All operations are checked against the pact's delegation-scoped policies.
+All operations are checked against the delegation-scoped policies.
 
 ## Handling Outcomes
 
 | Status | Agent action |
 |---|---|
 | `pending_approval` | Notify user that owner approval is required; optionally poll periodically |
-| `active` | Proceed with execution within pact scope |
-| `rejected` | Surface rejection to user; ask whether to adjust constraints and submit a new pact |
-| `cancelled` / `expired` / `completed` | Stop execution; inform user; request a new pact if continued action is needed |
+| `active` | Proceed with execution within authorization scope |
+| `rejected` | Surface rejection to user; ask whether to adjust constraints and submit a new authorization request |
+| `cancelled` / `expired` / `completed` | Stop execution; inform user; submit a new authorization request if continued action is needed |
 
 ## Troubleshooting
 
@@ -366,8 +366,8 @@ All operations are checked against the pact's delegation-scoped policies.
 |---|---|---|
 | `403` on submit | Agent not claimed by an owner, or not an AGENT principal | Run `caw onboard` and ensure the owner has claimed the agent |
 | `404` on submit | Wallet not found or not owned by the agent's owner | Verify wallet UUID with `caw --format json status` |
-| `422` on submit | Invalid PactSpec (policy rules, permissions, or completion conditions malformed) | Check [pact-knowledge.md](./pact-knowledge.md) for schema rules and validation constraints |
+| `422` on submit | Invalid authorization spec (policy rules, permissions, or completion conditions malformed) | Check [authorization-spec.md](./authorization-spec.md) for schema rules and validation constraints |
 | Pact stuck in `pending_approval` | Owner hasn't reviewed in CAW App | Inform user that owner approval is pending |
-| `api_key` not in response | Querying principal is not the submitting operator | Only the operator that submitted the pact can see the API key |
+| `api_key` not in response | Querying principal is not the submitting operator | Only the operator that submitted the request can see the API key |
 
-For PactSpec construction details, policy schemas, and validation rules, see [pact-knowledge.md](./pact-knowledge.md).
+For authorization spec construction details, policy schemas, and validation rules, see [authorization-spec.md](./authorization-spec.md).
