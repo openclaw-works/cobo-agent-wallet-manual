@@ -32,7 +32,11 @@ Execution authorization is implemented via the `caw pact` CLI commands. **When p
 
 1. **Construct** authorization parameters from the user's intent (see [Intent -> Submit Parameter Mapping](#intent---submit-parameter-mapping))
 2. **Submit**: `caw --format json pact submit ...`
-3. **Communicate**: Tell the user "This action requires owner approval. I've submitted an authorization request."
+3. **Communicate**: Extract `approval_id` from the submit response, construct the review URL `https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>`, and present it as a formatted link. Tell the user:
+
+   > ✅ Authorization request submitted. The owner needs to approve it before I can proceed.
+   >
+   > 🔗 **[Review & Approve in CAW App](https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>)**
 4. **Poll**: Use `caw --format json pact get <pact_id>` until status changes (or use `--wait`)
 5. **On `active`**: Proceed with execution using the authorization-scoped API key
 6. **On `rejected`**: Tell the user "The owner declined this action." Suggest adjustments if applicable.
@@ -355,7 +359,7 @@ All operations are checked against the delegation-scoped policies.
 
 | Status | Agent action |
 |---|---|
-| `pending_approval` | Notify user that owner approval is required; optionally poll periodically |
+| `pending_approval` | Notify user that owner approval is required; share the review link `https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>` (using `approval_id` from the submit response) so they can forward it to the owner; optionally poll periodically |
 | `active` | Proceed with execution within authorization scope |
 | `rejected` | Surface rejection to user; ask whether to adjust constraints and submit a new authorization request |
 | `cancelled` / `expired` / `completed` | Stop execution; inform user; submit a new authorization request if continued action is needed |
