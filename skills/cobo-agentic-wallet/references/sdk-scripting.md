@@ -233,7 +233,7 @@ For Solana: build instruction JSON and pass via the `instructions` param instead
 For additional protocol recipes, search the skill repo:
 
 ```bash
-npx skills find cobosteven/cobo-agent-wallet-manual "<protocol-name> <chain>"
+npx skills find openclaw-works/cobo-agent-wallet-manual "<protocol-name> <chain>"
 # e.g. "uniswap base", "aave arbitrum", "jupiter solana"
 ```
 

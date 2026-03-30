@@ -33,10 +33,10 @@ If none of the above apply, this skill is probably not what you need.
 ### 1. Install the skill
 
 ```bash
-npx skills add cobosteven/cobo-agent-wallet-manual --skill cobo-agentic-wallet-sandbox --yes --global
+npx skills add openclaw-works/cobo-agent-wallet-manual --skill cobo-agentic-wallet-sandbox-test --yes --global
 ```
 
-Or via [ClawHub](https://clawhub.ai/) registry: `npx clawhub@latest install cobo-agentic-wallet-sandbox`
+Or via [ClawHub](https://clawhub.ai/) registry: `npx clawhub@latest install cobo-agentic-wallet-sandbox-test`
 
 ### 2. Restart the gateway
 
@@ -116,7 +116,7 @@ Without this, the agent loses wallet context on restart and must re-onboard or r
 
 ## DeFi skills
 
-DeFi strategies are published as standalone skills. Use `caw schema` or `npx skills add cobosteven/cobo-agent-wallet-manual --list` to discover available skills.
+DeFi strategies are published as standalone skills. Use `caw schema` or `npx skills add openclaw-works/cobo-agent-wallet-manual --list` to discover available skills.
 
 | Strategy | Skill |
 |----------|-------|

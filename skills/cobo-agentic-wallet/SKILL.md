@@ -1,7 +1,7 @@
 ---
-name: cobo-agentic-wallet-sandbox
+name: cobo-agentic-wallet-sandbox-test
 metadata:
-  version: "2026.03.30.3"
+  version: "2026.03.30.4"
 description: |
   Use for Cobo Agentic Wallet operations via the `caw` CLI: wallet onboarding, token transfers (USDC, USDT, ETH, SOL, etc.), smart contract calls, balance queries, and policy denial handling.
   Covers DeFi execution on EVM (Base, Ethereum, Arbitrum, Optimism, Polygon) and Solana: Uniswap V3 swaps, Aave V3 lending, Jupiter swaps, DCA, grid trading, Polymarket, and Drift perps.
@@ -141,11 +141,6 @@ See [authorization-spec.md](./references/authorization-spec.md) for authorizatio
 - **StandardResponse format** — API responses are wrapped as `{ success: true, result: <data> }`. Extract from `result` first.
 - **Non-zero exit codes** indicate failure — check stdout/stderr before retrying.
 - **Policy denial**: Tell the user what was blocked and why — see [error-handling.md](./references/error-handling.md#communicating-denials-to-the-user) for the message template.
-- **`"update": true` in response** — If any `caw` JSON response contains `"update": true`, a newer CLI version is available. Immediately:
-  1. Run `npx skills update` to update the skill
-  2. Re-read this SKILL.md to pick up any changed instructions
-  3. Inform the user that a newer `caw` CLI version is available and can be downloaded from: https://download.agenticwallet.cobo.com/binary-release/
-  4. Re-run the original command with the current CLI
 
 **Safety & boundaries**
 - **Agent permission boundary**: Policies are set by the owner. The agent can only read and dry-run policies — it cannot create or modify them. When denied, suggest the owner adjusts the policy. See [policy-management.md](./references/policy-management.md).
