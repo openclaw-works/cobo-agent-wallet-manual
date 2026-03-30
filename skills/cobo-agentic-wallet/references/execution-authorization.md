@@ -13,33 +13,33 @@ Execution authorization is implemented via the `caw pact` CLI commands. **When p
 
 ## When to use execution authorization
 
-**Always request authorization before:**
-- Any contract call (`caw tx call`)
-- Any sign message (`caw tx sign-message`)
-- Recurring strategy execution (DCA, periodic rebalance)
-- Multi-step automation with risk bounds
+**Decision principle**: Evaluate the full end-to-end complexity of the user's intent. If completing the task involves on-chain writes (contract calls, message signing), spans time (recurring, scheduled, multi-phase), requires coordinated multi-step execution, or carries financial risk beyond a simple one-shot transfer — request authorization. When in doubt, request authorization. Never suggest the user manually configure controls in WebConsole as a substitute for this flow.
+
+**Authorization required:**
+- Contract calls (`caw tx call`) or message signing (`caw tx sign-message`)
+- Any task that spans time or repeats (recurring transfers, DCA, periodic rebalancing, scheduled automation)
+- Multi-step workflows with risk bounds
 - Temporary delegated access with explicit expiry
+- Transfer denied due to cumulative quota exhaustion (daily/monthly limit reached)
 
-**Request authorization when transfer quota is exhausted:**
-- When `caw tx transfer` is denied due to cumulative limit exhaustion (daily/monthly), request authorization scoped to the transfer
-
-**Do NOT use execution authorization for:**
-- Token transfers within default quota (use `caw tx transfer` directly — try this first)
-- Read-only queries (use `caw wallet balance`, `caw tx list`, etc.)
-- Per-transaction limit denials (suggest reduced amount or ask user to contact owner instead)
+**Direct execution (no authorization):**
+- Single token transfer within default quota — try `caw tx transfer` first
+- Read-only queries (`caw wallet balance`, `caw tx list`, etc.)
+- Per-transaction limit denial — suggest reduced amount or ask user to contact owner
 
 ## Execution Authorization Flow
 
-1. **Construct** authorization parameters from the user's intent (see [Intent -> Submit Parameter Mapping](#intent---submit-parameter-mapping))
-2. **Submit**: `caw --format json pact submit ...`
-3. **Communicate**: Extract `approval_id` from the submit response, construct the review URL `https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>`, and present it as a formatted link. Tell the user:
+1. **Dedup check**: `caw --format json pact list --status pending_approval --wallet-id <id>`. If a pending request exists with the same intent, do NOT submit — inform the user and share the existing review link. If the user changed their intent, revoke the old one first (`caw --format json pact revoke <old_pact_id>`), then proceed.
+2. **Construct** authorization parameters from the user's intent (see [Intent -> Submit Parameter Mapping](#intent---submit-parameter-mapping))
+3. **Submit**: `caw --format json pact submit ...`
+4. **Communicate**: Extract `approval_id` from the submit response, construct the review URL `https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>`, and present it as a formatted link. Tell the user:
 
    > ✅ Authorization request submitted. The owner needs to approve it before I can proceed.
    >
    > 🔗 **[Review & Approve in CAW App](https://agenticwallet.sandbox.cobo.com/dashboard?approval=<approval_id>)**
-4. **Poll**: Use `caw --format json pact get <pact_id>` until status changes (or use `--wait`)
-5. **On `active`**: Proceed with execution using the authorization-scoped API key
-6. **On `rejected`**: Tell the user "The owner declined this action." Suggest adjustments if applicable.
+5. **Track**: Run `caw track --watch &` in the background to receive terminal state notifications (`active`/`rejected`/`completed`/`expired`/`revoked`) delivered via `openclaw agent --deliver`. The `prompt` stored in `--context` controls what the receiving agent does.
+6. **On `active`** *(delivered via [Notification])*: Proceed with execution using the authorization-scoped API key
+7. **On `rejected`** *(delivered via [Notification])*: Tell the user "The owner declined this action." Suggest adjustments if applicable.
 
 ## Transfer Quota Exhaustion Fallback
 
@@ -102,6 +102,8 @@ Use `--spec-file` or `--spec-json` when you need custom policies (allow/deny pai
 | `--wait` | `false` | Block until the authorization leaves `pending_approval` |
 | `--wait-timeout` | `10m` | Timeout for `--wait` |
 
+**Status tracking (pact submit only):** Include `prompt` in `--context` when submitting, then run `caw track --watch &` in the background. The prompt is read from the saved context — **this prompt applies to `caw pact submit` only.** If there is no relevant context, no follow-up is needed. Use: `--context '{"channel":"<channel>", "target":"<target>", "session_id":<session_id>, "prompt":"notify the user of the status update first, then execute the next steps based on the conversation context if applicable. Prefix the response with [Notification] to distinguish it from normal conversation replies"}'`
+
 **Example (inline mode):**
 
 ```bash
@@ -130,7 +132,9 @@ Weekly DCA: swap ~\$500 USDC to ETH via Uniswap V3 on Base.
 Every Monday, 90 days from activation.
 
 # Exit Conditions
-After 12 swaps OR \$6,000 total spent OR 90 days."
+After 12 swaps OR \$6,000 total spent OR 90 days." \
+  --context '{"channel":"discord", "target":"1483060020718473359", "session_id":12345, "prompt":"notify the user of the status update first, then execute the next steps based on the conversation context if applicable. Prefix the response with [Notification] to distinguish it from normal conversation replies"}' \
+  && caw track --watch &
 ```
 
 **Example (full authorization spec with policies):**
@@ -140,7 +144,9 @@ caw --format json pact submit \
   --wallet-id a1b2c3d4-5678-9abc-def0-123456789abc \
   --intent "Execute weekly ETH DCA on Base for 3 months" \
   --name "Base ETH Weekly DCA" \
-  --spec-file ./pact-dca.json
+  --spec-file ./pact-dca.json \
+  --context '{"channel":"discord", "target":"1483060020718473359", "session_id":12345, "prompt":"notify the user of the status update first, then execute the next steps based on the conversation context if applicable. Prefix the response with [Notification] to distinguish it from normal conversation replies"}' \
+  && caw track --watch &
 ```
 
 Where `pact-dca.json` contains a full authorization spec with policies:
@@ -306,7 +312,9 @@ caw --format json pact submit \
   --duration 7776000 \
   --max-tx 550 \
   --name "Base ETH Weekly DCA" \
-  --resource-scope '{"wallet_id":"<uuid>"}'
+  --resource-scope '{"wallet_id":"<uuid>"}' \
+  --context '{"channel":"<channel>", "target":"<target>", "session_id":12345, "prompt":"notify the user of the status update first, then execute the next steps based on the conversation context if applicable. Prefix the response with [Notification] to distinguish it from normal conversation replies"}' \
+  && caw track --watch &
 ```
 
 Note: `--permissions` uses `write:contract_call,read:wallet` instead of the broader `operator` since DCA swaps only need contract calls, not direct transfers.
@@ -318,6 +326,7 @@ If delegated execution is required and intent is complete, submit an authorizati
 **Readiness checklist before submit:**
 
 - [ ] Wallet target is explicit (user confirmed or only one wallet available)
+- [ ] No duplicate pending request for this wallet (dedup check in [flow step 1](#execution-authorization-flow))
 - [ ] Intent is specific and auditable (includes asset, action, chain, constraints)
 - [ ] Permissions follow [least privilege](#least-privilege-principle) — only what the task requires
 - [ ] Policies scope operations to specific chains, tokens, and/or contracts when applicable
@@ -336,9 +345,9 @@ If delegated execution is required and intent is complete, submit an authorizati
 
 ## Post-Submission Flow
 
-### Polling for Approval
+### Tracking Approval
 
-After submit, the request enters `pending_approval`. Poll with `caw pact get <pact_id>` until the status changes:
+After submit, the request enters `pending_approval`. Status changes are delivered automatically via `caw track --watch` running in the background. To manually check status:
 
 ```bash
 caw --format json pact get <pact_id>
